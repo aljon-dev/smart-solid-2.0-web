@@ -46,7 +46,7 @@ function Login() {
         <img src={logo} className="w-[400px] mr-[-90px]" />
       </div>
       <div className="w-[60%] h-full flex flex-col items-center gap-8 py-10 justify-center">
-        <h1 className="font-inter-bold italic text-3xl w-60 text-center">
+        <h1 className="font-inter-bold italic text-3xl w-60 text-center text-black">
           Smart Solid Waste Collection
         </h1>
         <div className="w-[400px] h-[400px] ">
@@ -115,9 +115,8 @@ function Login() {
               )}
             </button>
             <p
-              className={`${
-                form.error ? "opacity-100" : "opacity-0"
-              } p-2 h-4 text-xs font-bold text-[#E8090C]`}
+              className={`${form.error ? "opacity-100" : "opacity-0"
+                } p-2 h-4 text-xs font-bold text-[#E8090C]`}
             >
               {form.error}
             </p>
