@@ -54,7 +54,7 @@ function Login() {
             onSubmit={handleSignIn}
             className="flex flex-col z-10 w-full py-4"
           >
-            <label className="py-2 text-lg font-inter-bold">
+            <label className="py-2 text-lg font-inter-bold text-black">
               Email Address
             </label>
             <input
@@ -69,7 +69,7 @@ function Login() {
                 updateForm({ email: e.target.value });
               }}
             />
-            <label className="pt-2 py-2 text-lg font-inter-bold">
+            <label className="pt-2 py-2 text-lg font-inter-bold text-black">
               Password
             </label>
             <div className="px-4 bg-[#F2F2F2] h-14 rounded-xl w-full flex flex-row items-center">
