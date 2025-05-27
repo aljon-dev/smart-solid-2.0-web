@@ -52,8 +52,26 @@ function Dashboard() {
   const [screenshotter, setScreenshotter] = useState(null);
   const [onReset, setReset] = useState(false);
   const [isOpenEmptyNotif, setOpenEmptyNotif] = useState(false);
+  const [isOpenNotif, setOpenNotif] = useState(false);
 
   const dispatch = useDispatch();
+
+  const collectionPoints = [
+    { lat: 8.0106, lon: 125.1606 },
+    { lat: 7.995, lon: 139.3167 },
+    { lat: 8.0392, lon: 125.2367 },
+    { lat: 11.65, lon: 148.7833 },
+    { lat: 11.6833, lon: 140.2333 },
+    { lat: 8.0386, lon: 125.1694 },
+    { lat: 9.35, lon: 137.25 },
+    { lat: 8.1614, lon: 125.1242 },
+    { lat: 8.1636, lon: 125.1161 },
+    { lat: 8.1636, lon: 125.1214 },
+    { lat: 8.1611, lon: 125.1206 },
+    { lat: 8.1442, lon: 125.1256 },
+    { lat: 8.1439, lon: 125.1233 },
+    { lat: 8.1436, lon: 125.1211 },
+  ];
 
   const [trucks, setTrucks] = useReducer(
     (prev, next) => {
@@ -80,6 +98,18 @@ function Dashboard() {
 
   const trackGarbageTruck = () => {
     if (trucks["fetchState"] == 1) {
+      setOpenEmptyNotif(false);
+      setOpenNotif(true);
+
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+
+      timer = setTimeout(() => {
+        setOpenNotif(false);
+      }, 5000);
+
       const truck = trucks["trucks"][0];
 
       if (route) {
@@ -156,21 +186,34 @@ function Dashboard() {
           return marker;
         });
 
-        const tempM2 = [points[0]].map((item) => {
-          const marker = L.marker(item, { icon: iconRed }).addTo(map);
+        //  tempM2 = [points[0]].map((item) => {
+        //     const marker = L.marker(item, { icon: iconRed }).addTo(map);
 
-          // marker.bindTooltip("Truck 1 - Start", {
-          //   permanent: true,
-          //   direction: "top",
-          //   offset: L.point(-15, -15),
-          // });
+        //     // marker.bindTooltip("Truck 1 - Start", {
+        //     //   permanent: true,
+        //     //   direction: "top",
+        //     //   offset: L.point(-15, -15),
+        //     // });
+
+        //     return marker;
+        //   });
+
+        let tempM2 = collectionPoints.map((item, index) => {
+          const marker = L.marker(item, { icon: iconDefault }).addTo(map);
+
+          marker.bindTooltip(`Collection Point - ${index + 1}`, {
+            permanent: true,
+            direction: "top",
+            offset: L.point(-15, -15),
+          });
 
           return marker;
         });
 
         temp.addTo(map);
-        setMarker(tempM);
-        setMarker(tempM2);
+        setMarker([...tempM, ...tempM2]);
+        //setMarker(tempM2);
+
         setRoute(temp);
       } catch (err) {
         console.log(err);
@@ -178,6 +221,18 @@ function Dashboard() {
       }
 
       setScreenshotter(L.simpleMapScreenshoter(snapshotOptions).addTo(map));
+    } else {
+      setOpenNotif(false);
+      setOpenEmptyNotif(true);
+
+      if (timer) {
+        clearTimeout(timer);
+        timer = null;
+      }
+
+      timer = setTimeout(() => {
+        setOpenEmptyNotif(false);
+      }, 5000);
     }
   };
 
@@ -249,6 +304,7 @@ function Dashboard() {
             trucks: [],
           });
 
+          setOpenNotif(false);
           setOpenEmptyNotif(true);
 
           if (timer) {
@@ -264,6 +320,17 @@ function Dashboard() {
         }
 
         setOpenEmptyNotif(false);
+        setOpenNotif(true);
+
+        if (timer) {
+          clearTimeout(timer);
+          timer = null;
+        }
+
+        timer = setTimeout(() => {
+          setOpenNotif(false);
+        }, 5000);
+
         setTrucks({
           fetchState: 1,
           trucks: trucks,
@@ -356,6 +423,7 @@ function Dashboard() {
           setReset(true);
         }}
         isOpenEmptyNotif={isOpenEmptyNotif}
+        isOpenNotif={isOpenNotif}
       />
       <PopupDialog
         show={onReset}

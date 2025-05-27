@@ -1,10 +1,9 @@
+import React, { useState, useEffect } from "react";
 import {
   EllipsisVerticalIcon,
   MegaphoneIcon,
   PencilSquareIcon,
-  PlusIcon,
   TrashIcon,
-  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import {
   Backdrop,
@@ -14,14 +13,16 @@ import {
   MenuList,
 } from "@mui/material";
 import { formatDistanceToNowStrict } from "date-fns";
-import React, { useState } from "react";
+import { useDispatch } from "react-redux";
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "../../firebase";
 import AnnouncementForm from "./AnnouncementForm";
 import PopupDialog from "./PopupDialog";
 import { deleteAnnouncement } from "../api/Services";
 import { show } from "../states/alerts";
-import { useDispatch } from "react-redux";
 
-function Announcement({ announcements }) {
+function Announcement() {
+  const [announcementsList, setAnnouncementsList] = useState([]);
   const [isCreate, setCreate] = useState(false);
   const [isUpdate, setUpdate] = useState(null);
   const [anchorEl, setAnchorEl] = useState(null);
@@ -31,13 +32,30 @@ function Announcement({ announcements }) {
   const dispatch = useDispatch();
   const open = Boolean(anchorEl);
 
-  const handleClick = (event) => {
-    setAnchorEl(event.currentTarget);
-  };
+  useEffect(() => {
+    const ref = collection(db, "Announcements");
+    const unsubscribe = onSnapshot(ref, (snapshot) => {
+      const data = snapshot.docs
+        .map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }))
+        .sort((a, b) => {
+          const timeA = a.postedAt?.toDate?.() || new Date(0);
+          const timeB = b.postedAt?.toDate?.() || new Date(0);
+          return timeB - timeA; // Newest first
+        });
+
+      setAnnouncementsList(data);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
 
   const handleDelete = (item) => {
     deleteAnnouncement(item.id)
-      .then((_) => {
+      .then(() => {
         dispatch(
           show({
             type: "success",
@@ -48,7 +66,7 @@ function Announcement({ announcements }) {
         );
       })
       .catch((err) => {
-        console.log(err);
+        console.error(err);
         dispatch(
           show({
             type: "error",
@@ -61,50 +79,40 @@ function Announcement({ announcements }) {
   };
 
   return (
-    <div className="w-full h-full bg-[#ffffff] rounded-lg">
-      <div className=" flex justify-end pr-10">
+    <div className="w-full h-full bg-white rounded-lg">
+      <div className="flex justify-end pr-10">
         <button
-          onClick={() => {
-            setCreate(true);
-          }}
-          className="w-[150px] bg-[#19AF0C] mt-5 h-10 rounded-lg font-inter-bold justify-end"
+          onClick={() => setCreate(true)}
+          className="w-[150px] bg-[#19AF0C] mt-5 h-10 rounded-lg font-inter-bold"
         >
           Create
         </button>
-
       </div>
-      <div className="w-full h-full p-4 flex flex-row">
-
-        <div className="flex-1 px-4 flex flex-col overflow-hidden">
-
-          <div className="w-full h-full flex flex-col overflow-auto gap-3 my-2">
-            {announcements["data"].map((item) => {
-              return (
-                <div
-                  key={item.id}
-                  className=" bg-[#19AF0C] py-2 min-h-16 rounded-lg flex flex-row items-center px-4 gap-2"
-                >
-                  <MegaphoneIcon className="w-6" />
-                  <h1 className="flex-1 font-inter">{item.announcement}</h1>
-                  <p className="text-sm font-inter-light">
-                    {formatDistanceToNowStrict(item.postedAt.toDate(), {
-                      addSuffix: true,
-                    })}
-                  </p>
-                  <EllipsisVerticalIcon
-                    className="w-6 cursor-pointer select-none"
-                    onClick={(e) => {
-                      handleClick(e);
-                      setSelected(item);
-                    }}
-                  />
-                </div>
-              );
-            })}
-          </div>
-        </div>
-        <div className=" flex flex-row  ">
-
+      <div className="w-full h-full p-4 flex flex-col">
+        <div className="w-full h-full flex flex-col overflow-auto gap-3 my-2">
+          {announcementsList.map((item) => (
+            <div
+              key={item.id}
+              className="bg-white-100 py-2 min-h-16 rounded-lg border flex flex-row items-center text-black px-4 gap-2"
+            >
+              <MegaphoneIcon className="w-6" />
+              <h1 className="flex-1 font-inter">{item.announcement}</h1>
+              <p className="text-sm font-inter-light">
+                {item.postedAt?.toDate
+                  ? formatDistanceToNowStrict(item.postedAt.toDate(), {
+                    addSuffix: true,
+                  })
+                  : "Invalid Date"}
+              </p>
+              <EllipsisVerticalIcon
+                className="w-6 cursor-pointer"
+                onClick={(e) => {
+                  setAnchorEl(e.currentTarget);
+                  setSelected(item);
+                }}
+              />
+            </div>
+          ))}
         </div>
       </div>
       <Backdrop
@@ -125,13 +133,10 @@ function Announcement({ announcements }) {
         id="basic-menu"
         anchorEl={anchorEl}
         open={open}
-        dense={"true"}
-        onClose={() => {
-          setAnchorEl(null);
-        }}
+        onClose={() => setAnchorEl(null)}
         className="p-0"
       >
-        <MenuList className="focus:outline-none p-0 ">
+        <MenuList className="p-0">
           <MenuItem
             onClick={() => {
               setAnchorEl(null);
@@ -158,18 +163,14 @@ function Announcement({ announcements }) {
       </Menu>
       <PopupDialog
         show={!!isDelete}
-        close={() => {
-          setDelete(null);
-        }}
+        close={() => setDelete(null)}
         title="Delete Announcement"
         content="Are you sure you want to delete this announcement?"
         action1={() => {
           handleDelete(isDelete);
           setDelete(null);
         }}
-        action2={() => {
-          setDelete(null);
-        }}
+        action2={() => setDelete(null)}
       />
     </div>
   );

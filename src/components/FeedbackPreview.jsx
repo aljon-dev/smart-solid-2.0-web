@@ -37,10 +37,8 @@ function FeedbackPreview({ feedback, close }) {
             })}
           </div>
         )}
-        <div className="w-1/2 h-full">
-          <p className="text-sm py-4 truncate text-wrap">
-            {feedback["Feedback"]}
-          </p>
+        <div className="w-full min-h-40 h-full bg-white p-4 rounded-lg">
+          <p className="text-sm truncate text-wrap">{feedback["Feedback"]}</p>
         </div>
       </div>
 

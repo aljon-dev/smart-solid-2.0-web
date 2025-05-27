@@ -39,17 +39,21 @@ const deleteAnnouncement = (id) => {
   return deleteDoc(doc(db, "Announcements", id));
 };
 
-const addSchedule =  async (form) => {
-    const sched = {...form, addedAt:Timestamp.now()}
-    const scheduleRef = doc(collection(db,"Schedules"));
-    
-    return await setDoc(scheduleRef,sched)
+const addSchedule = (form) => {
+  var sched = form;
+  sched["addedAt"] = Timestamp.now();
+  return setDoc(doc(collection(db, "Schedules")), sched);
 };
 
-const deleteSchedule = (id) => {
-    return deleteDoc(doc(db,"Schedules",id))
-}
+const deleteSchedule = (scheds) => {
+  return runTransaction(db, async (transaction) => {
+    scheds.map(async (item) => {
+      const ref = doc(db, "Schedules", item);
 
+      transaction.delete(ref);
+    });
+  });
+};
 
 const getAnnouncements = () => {
   const ref = collection(db, "Announcements");
@@ -110,6 +114,14 @@ const addBrgy = (id, brgy) => {
   });
 };
 
+const onSetNote = (id, note) => {
+  const ref = doc(db, "Locations", id);
+
+  return updateDoc(ref, {
+    note,
+  });
+};
+
 const removeBrgy = (id, brgy) => {
   const ref = doc(db, "Locations", id);
 
@@ -126,6 +138,12 @@ const updateSchedule = (id, schedule) => {
   const ref = doc(db, "Schedules", id);
 
   return updateDoc(ref, schedule);
+};
+
+const updateFeedback = (id, status) => {
+  const ref = doc(db, "Feedbacks", id);
+
+  return updateDoc(ref, { status: status });
 };
 
 export {
@@ -148,4 +166,6 @@ export {
   deleteLocation,
   updateLocation,
   updateSchedule,
+  updateFeedback,
+  onSetNote,
 };

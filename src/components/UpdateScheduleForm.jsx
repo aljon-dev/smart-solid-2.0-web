@@ -78,7 +78,7 @@ function UpdateScheduleForm({ item, brgy, location, onClose }) {
           }}
           className="bg-[#D9D9D9] px-1 h-8 w-1/2 rounded-sm focus:outline-none"
         />
-        <select
+        {/* <select
           required
           value={form.day}
           onChange={(e) => {
@@ -101,7 +101,7 @@ function UpdateScheduleForm({ item, brgy, location, onClose }) {
               </option>
             );
           })}
-        </select>
+        </select> */}
         <div className="flex flex-col w-1/4 gap-1">
           <input
             required
